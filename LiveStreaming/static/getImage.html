@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Post an Image test</title>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="static/myStyle.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+</head>
+<style>
+    /* mirror the image */
+    video, canvas {
+    transform: scale(-1, 1); /*For Firefox (& IE) */
+    -webkit-transform: scale(-1, 1); /*for Chrome & Opera (& Safari) */
+}
+</style>
+<body>
+
+<h3 style="text-align: center;">IIT-B Security : Main Gate</h3>
+<div class="container">
+  <div class="row">
+    <div class="col">
+
+        <video width="500" height=auto id="myVideo" autoplay style="align-items: center;"></video>
+        <div class="col-md-16 text-center"> 
+            <button onclick="captureVid()" type="submit" class="col-md-16 btn btn-outline-primary btn-lg">Capture</button> 
+        </div>
+    </div>
+
+    <div class="col" >
+        <input type="text" name="vehicleNo" class="form-control" id="vehicleNo" placeholder="Vehicle Number">
+        <br>
+        <select id="vehicleType" name="vehicleType" class="form-control" >
+                <option selected>Vehicle type...</option>
+                <option value="Hatchback">Hatchback</option>
+                <option value="Sedan">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="Van">Van</option>
+                <option value="AutoRickshaw">AutoRickshaw</option>
+                <option value="Others">Others</option>
+              </select>
+              <br>
+        <div class="button col-md-16 text-center" id="actionArea">
+        <button  class="col-md-16 btn btn-outline-success btn-lg" onclick="sendDataForChecking()">Check</button>
+        </div>
+        <br>
+    </div>
+
+    
+  </div>
+</div>
+
+
+<script>
+
+    let v = document.getElementById("myVideo");
+
+    //create a canvas to grab an image for upload
+    let imageCanvas = document.createElement('canvas');
+    let imageCtx = imageCanvas.getContext("2d");
+
+    //Add file blob to a form and post
+    function postFile(file) {
+        let formdata = new FormData();
+        formdata.append("image", file);
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:5000/image', true);
+        xhr.onload = function () {
+            if (this.status === 200)
+                console.log(this.response);
+            else
+                console.error(xhr);
+        };
+        xhr.send(formdata);
+    }
+
+    //Get the image from the canvas
+    function sendImagefromCanvas() {
+
+        //Make sure the canvas is set to the current video size
+        imageCanvas.width = v.videoWidth;
+        imageCanvas.height = v.videoHeight;
+
+        imageCtx.drawImage(v, 0, 0, v.videoWidth, v.videoHeight);
+
+        //Convert the canvas to blob and post the file
+        imageCanvas.toBlob(postFile, 'image/jpeg');
+    }
+
+    //Take a picture on click
+    v.onclick = function() {
+        console.log('click');
+        sendImagefromCanvas();
+    };
+
+    window.onload = function () {
+
+        //Get camera video
+        navigator.mediaDevices.getUserMedia({video: {width: 1280, height: 720}, audio: false})
+            .then(stream => {
+                v.srcObject = stream;
+            })
+            .catch(err => {
+                console.log('navigator.getUserMedia error: ', err)
+            });
+
+    };
+
+    function captureVid() {
+        v.pause();
+        sendImagefromCanvas();
+    }
+
+    function sendDataForChecking() {
+    $.ajax({
+        type: "POST",
+        cache: false,
+        url: "/checkList",
+        data: {
+            vehicleNo: $("#vehicleNo").val(),
+            vehicleType: $("#vehicleType :selected").val()
+        }, // multiple data sent using ajax
+        success: function(result) {
+            console.log(result);
+            if(result == 'Whitelisted'){
+                $("#actionArea").append('<br><div class="col"><div class="alert alert-success text-center" role="alert">No bad history detected with the Vehicle<br><div>  <button type="button" class="btn btn-success " onclick="sendDataForInsertionWhitelistedEntry()">Enter</button></div></div>');
+            }
+            if(result == 'Blacklisted'){
+                $("#actionArea").append('<div class="alert alert-danger text-center" role="alert">Vehicle is blacklisted.<br><div class="button col-md-16 text-center">  <button type="button" class="btn btn-danger " onclick="location.href="http://localhost:5000"" >Exit</button></div></div>');
+            }
+            
+            
+        }
+    });
+}
+    function sendDataForInsertionWhitelistedEntry() {
+        console.log("inside sendDataForInsertion");
+    $.ajax({
+        type: "POST",
+        cache: false,
+        url: "/insertRecord",
+        data: {
+            vehicleNo: $("#vehicleNo").val(),
+            vehicleType: $("#vehicleType :selected").val(),
+            decision: "WhitelistedEntered"
+        }, // multiple data sent using ajax
+        success: function(result) {
+            window.location = "http://localhost:5000";       
+        }
+    });
+}
+
+function sendDataForInsertionBlacklistedEntry(){
+    window.location = "http://localhost:5000";
+}
+
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
