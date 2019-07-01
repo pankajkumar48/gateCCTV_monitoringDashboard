@@ -18,12 +18,12 @@ def sendEmail(args):
         mail=Mail(app)
         app.config['MAIL_SERVER']='smtp.gmail.com'
         app.config['MAIL_PORT'] = 465
-        app.config['MAIL_USERNAME'] = 'pankajwillkillu@gmail.com'
-        app.config['MAIL_PASSWORD'] = 'Quad2core.'
+        app.config['MAIL_USERNAME'] = '********@gmail.com'
+        app.config['MAIL_PASSWORD'] = '********'
         app.config['MAIL_USE_TLS'] = False
         app.config['MAIL_USE_SSL'] = True
         mail = Mail(app)
-        msg = Message('Vehicle trespassing', sender = 'pankajwillkillu@gmail.com', recipients = ['pankajlookingjobs@gmail.com'])
+        msg = Message('Vehicle trespassing', sender = '********@gmail.com', recipients = ['**********@gmail.com'])
         msg.body = "This Vehicle is hanging around the campus for more than 4 hours"
         read_blob(vehicleNo)
         with app.open_resource("images/imageRead.jpeg") as fp:
@@ -49,7 +49,7 @@ def write_blob():
         # Database credentials
         hostname = 'localhost'
         username = 'pankaj kumar'
-        password = 'quad2core'
+        password = '**********'
         database = 'postgres'
         conn = psycopg2.connect( host=hostname, user=username, password=password, dbname=database )
         # create a new cursor object
@@ -76,7 +76,7 @@ def read_blob(vehicleNo):
     # Database credentials
     hostname = 'localhost'
     username = 'pankaj kumar'
-    password = 'quad2core'
+    password = '*********'
     database = 'postgres'
     try:
         # read database configuration
@@ -135,7 +135,7 @@ def checkList():
     # Database credentials
     hostname = 'localhost'
     username = 'pankaj kumar'
-    password = 'quad2core'
+    password = '**********'
     database = 'postgres'
     vehicleNo = request.form.get("vehicleNo")
     vehicleType = request.form.get("vehicleType")
